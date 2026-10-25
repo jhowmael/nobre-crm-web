@@ -1,4 +1,4 @@
-import { addDays, daysBetween } from "./format";
+import { addDays, dateBR, daysBetween } from "./format";
 import { stageColor } from "./stages";
 import { Stage, type Catalogs, type LossReasonOption, type Opportunity, type StageCatalogItem } from "./types";
 
@@ -21,6 +21,13 @@ export interface Catalog {
   daysFromToday: (iso: string) => number;
   inDays: (days: number) => string;
 }
+
+export const validityError = (date: string, today: string) =>
+  !date
+    ? "Informe a validade da proposta."
+    : date < today
+      ? `A validade não pode ser anterior a hoje (${dateBR(today)}).`
+      : undefined;
 
 export function blockedReason(catalogs: Pick<Catalogs, "blockedReasons" | "transitions">, from: Stage, to: Stage): string | null {
   if (from === to) return null;

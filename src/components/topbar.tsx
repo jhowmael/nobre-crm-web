@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import { Columns3, List, LogIn, Plus, Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { dateBR } from "@/lib/format";
 import type { Seller } from "@/lib/types";
 import { useCatalog, useSellerName } from "./app-data";
@@ -11,6 +12,11 @@ import { Button, Input, Segmented } from "./ui";
 import { UserMenu } from "./user-menu";
 
 export type ViewMode = "board" | "list";
+
+const VIEW_OPTIONS: { value: ViewMode; label: string; icon: ReactNode }[] = [
+  { value: "board", label: "Kanban", icon: <Columns3 size={16} /> },
+  { value: "list", label: "Lista", icon: <List size={16} /> },
+];
 
 function SearchField({
   value,
@@ -125,10 +131,7 @@ export function TitleRow({
               label="Modo de visualização"
               value={view}
               onChange={onViewChange}
-              options={[
-                { value: "board", label: "Kanban", icon: <Columns3 size={16} /> },
-                { value: "list", label: "Lista", icon: <List size={16} /> },
-              ]}
+              options={VIEW_OPTIONS}
             />
             <FiltersMenu filters={filters} onChange={onChange} user={user} />
           </div>
@@ -146,10 +149,7 @@ export function TitleRow({
           label="Modo de visualização"
           value={view}
           onChange={onViewChange}
-          options={[
-            { value: "board", label: "Kanban", icon: <Columns3 size={16} /> },
-            { value: "list", label: "Lista", icon: <List size={16} /> },
-          ]}
+          options={VIEW_OPTIONS}
         />
       </div>
     </div>

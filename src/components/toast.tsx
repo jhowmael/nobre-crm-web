@@ -1,12 +1,11 @@
 "use client";
 
-import clsx from "clsx";
 import { CircleAlert, CircleCheck } from "lucide-react";
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 
 type Tone = "success" | "error";
 
-export interface ToastAction {
+interface ToastAction {
   label: string;
   onClick: () => void;
 }
@@ -50,9 +49,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={item.id}
             role={item.tone === "error" ? "alert" : undefined}
-            className={clsx(
-              "animate-rise pointer-events-auto flex max-w-md items-start gap-2.5 rounded-panel border border-border bg-overlay px-4 py-3 text-body text-ink shadow-overlay",
-            )}
+            className="animate-rise pointer-events-auto flex max-w-md items-start gap-2.5 rounded-panel border border-border bg-overlay px-4 py-3 text-body text-ink shadow-overlay"
           >
             {item.tone === "error" ? (
               <CircleAlert size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-negative" />

@@ -33,7 +33,7 @@ import {
   type OpportunityQuery,
 } from "@/lib/types";
 
-export const KEYS = {
+const KEYS = {
   catalogs: ["catalogs"] as const,
   sellers: ["sellers"] as const,
   opportunities: ["opportunities"] as const,
@@ -50,17 +50,16 @@ const WRITE_SCOPE = { id: "opportunities-write" };
 const CONTACT_CODES = [AttentionCode.NO_CONTACT, AttentionCode.NO_CONTACT_REGISTERED];
 
 export const useCatalogs = () =>
-  useQuery({ queryKey: KEYS.catalogs, queryFn: ({ signal }) => getCatalogs(signal), staleTime: Infinity, gcTime: Infinity, retry: false });
+  useQuery({ queryKey: KEYS.catalogs, queryFn: ({ signal }) => getCatalogs(signal), staleTime: Infinity, gcTime: Infinity });
 
 export const useSellersQuery = () =>
-  useQuery({ queryKey: KEYS.sellers, queryFn: ({ signal }) => listSellers(signal), staleTime: 5 * 60_000, retry: false });
+  useQuery({ queryKey: KEYS.sellers, queryFn: ({ signal }) => listSellers(signal), staleTime: 5 * 60_000 });
 
 export const useOpportunities = (query: OpportunityQuery) =>
   useQuery({
     queryKey: KEYS.list(query),
     queryFn: ({ signal }) => listOpportunities(query, signal),
     placeholderData: keepPreviousData,
-    retry: false,
   });
 
 export const useOpportunityDetail = (id: string | null, enabled: boolean) =>
@@ -68,7 +67,6 @@ export const useOpportunityDetail = (id: string | null, enabled: boolean) =>
     queryKey: KEYS.detail(id ?? ""),
     queryFn: ({ signal }) => getOpportunity(id!, signal),
     enabled: enabled && id != null,
-    retry: false,
   });
 
 export const useHistory = (id: string | null) =>
@@ -76,11 +74,10 @@ export const useHistory = (id: string | null) =>
     queryKey: KEYS.history(id ?? ""),
     queryFn: ({ signal }) => listHistory(id!, signal),
     enabled: id != null,
-    retry: false,
   });
 
 export const useInitialTaskGeneration = () =>
-  useQuery({ queryKey: KEYS.generation, queryFn: generateFollowupTasks, staleTime: Infinity, gcTime: Infinity, retry: false });
+  useQuery({ queryKey: KEYS.generation, queryFn: generateFollowupTasks, staleTime: Infinity, gcTime: Infinity });
 
 export const useFollowupTasks = (query: FollowupTaskQuery, enabled: boolean) =>
   useQuery({
@@ -88,7 +85,6 @@ export const useFollowupTasks = (query: FollowupTaskQuery, enabled: boolean) =>
     queryFn: ({ signal }) => listFollowupTasks(query, signal),
     enabled,
     placeholderData: keepPreviousData,
-    retry: false,
   });
 
 const isPage = (data: unknown): data is OpportunityPage =>
@@ -105,7 +101,7 @@ function patchEverywhere(client: QueryClient, id: string, patch: (opp: Opportuni
   });
 }
 
-export function findCached(client: QueryClient, id: string): Opportunity | undefined {
+function findCached(client: QueryClient, id: string): Opportunity | undefined {
   let found: Opportunity | undefined;
   client.getQueriesData({ queryKey: KEYS.opportunities }).forEach(([, data]) => {
     const candidate = isPage(data) ? data.items.find((opp) => opp.id === id) : isOpportunity(data) && data.id === id ? data : undefined;
@@ -144,7 +140,7 @@ function refreshAfterWrite(client: QueryClient, error: unknown, id?: string) {
 let generation: Promise<void> | null = null;
 let pendingGeneration = false;
 
-export function useRegenerateTasks(onError?: (error: unknown) => void) {
+function useRegenerateTasks(onError?: (error: unknown) => void) {
   const client = useQueryClient();
   return useCallback(() => {
     if (generation) {
@@ -179,7 +175,7 @@ function restoreTasks(client: QueryClient, previous: ReturnType<typeof removeTas
   previous?.forEach(([key, data]) => client.setQueryData(key, data));
 }
 
-export interface MoveVars {
+interface MoveVars {
   opp: Opportunity;
   to: Stage;
   payload?: MovePayload;
@@ -216,7 +212,7 @@ export function useMoveStage(onTasksError?: (error: unknown) => void) {
   });
 }
 
-export interface UpdateVars {
+interface UpdateVars {
   opp: Opportunity;
   patch: OpportunityPatch;
 }
@@ -251,7 +247,7 @@ export function useUpdateOpportunity(onTasksError?: (error: unknown) => void) {
   });
 }
 
-export interface ContactVars {
+interface ContactVars {
   opp: Opportunity;
   sellerId?: string;
 }

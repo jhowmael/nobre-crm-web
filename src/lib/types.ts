@@ -5,11 +5,8 @@ export { AttentionCode, AttentionLevel, AttentionSignalLevel, FollowupTaskStatus
 type Schemas = components["schemas"];
 
 export type Opportunity = Schemas["OpportunityResponseDto"];
-export type GiftItem = Schemas["GiftItemResponseDto"];
 export type GiftItemInput = Schemas["GiftItemRequestDto"];
 export type Attention = Schemas["AttentionResponseDto"];
-export type AttentionSignal = Schemas["AttentionSignalResponseDto"];
-export type LossReasonSummary = Schemas["LossReasonSummaryResponseDto"];
 export type StageChange = Schemas["StageHistoryResponseDto"];
 export type Catalogs = Schemas["CatalogsResponseDto"];
 export type StageCatalogItem = Schemas["StageCatalogItemResponseDto"];

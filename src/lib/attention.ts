@@ -8,11 +8,9 @@ const RANK: Record<AttentionLevel, number> = {
 
 const FAR_FUTURE = "9999-12-31";
 
-export const attentionRank = (level: AttentionLevel) => RANK[level] ?? 0;
+const attentionRank = (level: AttentionLevel) => RANK[level] ?? 0;
 
 export const needsAttention = (attention: Attention) => attention.level !== AttentionLevel.none && attention.signals.length > 0;
-
-export const attentionMessages = (attention: Attention) => attention.signals.map((signal) => signal.message);
 
 export function compareByUrgency(a: Opportunity, b: Opportunity) {
   return (

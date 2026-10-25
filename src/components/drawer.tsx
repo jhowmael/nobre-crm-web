@@ -5,12 +5,12 @@ import { ArrowLeft, ArrowRight, CalendarDays, Lock, Pencil, PhoneCall, X, XCircl
 import { useId, useRef, useState, type ReactNode } from "react";
 import { useHistory } from "@/hooks/queries";
 import { needsAttention } from "@/lib/attention";
-import { acceptsValidity, missingForQuote } from "@/lib/catalog";
+import { acceptsValidity, missingForQuote, validityError } from "@/lib/catalog";
 import { brl, dateBR, dateTimeBR, plural } from "@/lib/format";
 import { Stage, type Opportunity } from "@/lib/types";
 import { useCatalog } from "./app-data";
 import { ATTENTION_LABEL, AttentionBadge, alertLevel } from "./attention-badge";
-import { Avatar, Button, Input, SectionTitle, useDialogFocus } from "./ui";
+import { Avatar, Button, Input, RetryButton, SectionTitle, useDialogFocus } from "./ui";
 
 const LIST = new Intl.ListFormat("pt-BR", { style: "long", type: "conjunction" });
 
@@ -35,7 +35,7 @@ export function Drawer({
   contactPending,
   movePending,
   validityPending,
-  validityError,
+  validityError: serverValidityError,
 }: {
   opp: Opportunity;
   onClose: () => void;
@@ -80,12 +80,8 @@ export function Drawer({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [touched, setTouched] = useState(false);
-  const draftError = !draft
-    ? "Informe a validade da proposta."
-    : draft < today
-      ? `A validade não pode ser anterior a hoje (${dateBR(today)}).`
-      : undefined;
-  const shownDraftError = touched ? (draftError ?? validityError) : undefined;
+  const draftError = validityError(draft, today);
+  const shownDraftError = touched ? (draftError ?? serverValidityError) : undefined;
 
   const startEdit = () => {
     setDraft(opp.proposalValidUntil ?? "");
@@ -303,9 +299,7 @@ export function Drawer({
             {history.isError && (
               <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-card bg-negative-tint px-3 py-2 text-body text-negative-ink">
                 Não foi possível carregar o histórico.
-                <Button onClick={() => history.refetch()} disabled={history.isFetching}>
-                  {history.isFetching ? "Tentando…" : "Tentar novamente"}
-                </Button>
+                <RetryButton retrying={history.isFetching} onRetry={() => history.refetch()} />
               </div>
             )}
             {history.data && (
@@ -326,38 +320,27 @@ export function Drawer({
         {next.length > 0 && (
           <footer className="flex flex-col gap-3 border-t border-rule px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-4">
             <div className="flex flex-col gap-2">
-              {forward.map((to) => {
+              {[...forward, ...backward].map((to) => {
                 const hint = moveHint(to);
+                const back = backward.includes(to);
                 return (
                   <div key={to} className="flex min-w-0 flex-col gap-1">
                     <Button
-                      variant="primary"
+                      variant={back ? "secondary" : "primary"}
                       className="h-auto! min-h-control w-full whitespace-normal py-2 text-center"
                       disabled={movePending}
                       aria-describedby={hint ? `${id}-hint-${to}` : undefined}
                       onClick={() => onMove(opp, to)}
                     >
-                      Mover para {stageLabel(to)} <ArrowRight size={16} aria-hidden="true" />
-                    </Button>
-                    {hint && (
-                      <span id={`${id}-hint-${to}`} className="text-center text-caption text-ink-2">
-                        {hint}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-              {backward.map((to) => {
-                const hint = moveHint(to);
-                return (
-                  <div key={to} className="flex min-w-0 flex-col gap-1">
-                    <Button
-                      className="h-auto! min-h-control w-full whitespace-normal py-2 text-center"
-                      disabled={movePending}
-                      aria-describedby={hint ? `${id}-hint-${to}` : undefined}
-                      onClick={() => onMove(opp, to)}
-                    >
-                      <ArrowLeft size={16} aria-hidden="true" /> Voltar para {stageLabel(to)}
+                      {back ? (
+                        <>
+                          <ArrowLeft size={16} aria-hidden="true" /> Voltar para {stageLabel(to)}
+                        </>
+                      ) : (
+                        <>
+                          Mover para {stageLabel(to)} <ArrowRight size={16} aria-hidden="true" />
+                        </>
+                      )}
                     </Button>
                     {hint && (
                       <span id={`${id}-hint-${to}`} className="text-center text-caption text-ink-2">

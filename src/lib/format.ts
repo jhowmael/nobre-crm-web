@@ -34,7 +34,7 @@ export const daysBetween = (from: string, to: string) => Math.round((utc(to) - u
 
 export const addDays = (iso: string, days: number) => new Date(utc(iso) + days * 86_400_000).toISOString().slice(0, 10);
 
-export const initials = (name: string) => name.slice(0, 1).toUpperCase();
+export const initial = (name: string) => name.slice(0, 1).toUpperCase();
 
 export const firstName = (name: string) => name.split(" ")[0];
 

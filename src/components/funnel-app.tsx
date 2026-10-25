@@ -52,9 +52,7 @@ function storeUser(id: string | null) {
   try {
     if (id) localStorage.setItem(USER_KEY, id);
     else localStorage.removeItem(USER_KEY);
-  } catch {
-    return;
-  }
+  } catch {}
 }
 
 const defaultUser = (sellers: Seller[]) =>

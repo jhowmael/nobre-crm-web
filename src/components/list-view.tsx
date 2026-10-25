@@ -14,34 +14,33 @@ import { Avatar, LossPendingBadge } from "./ui";
 type SortKey = "code" | "company" | "stage" | "gift" | "value" | "seller" | "lastContact" | "validity" | "event" | "attention";
 type Direction = "asc" | "desc";
 
+interface Column {
+  key: SortKey;
+  label: string;
+  compare: (a: Opportunity, b: Opportunity) => number;
+  hasValue?: (opp: Opportunity) => boolean;
+}
+
 const text = (a: string | null, b: string | null) => (a == null ? (b == null ? 0 : 1) : b == null ? -1 : a.localeCompare(b, "pt-BR"));
 const number = (a: number | null, b: number | null) => (a == null ? (b == null ? 0 : 1) : b == null ? -1 : a - b);
 
-const buildColumns = (catalog: Catalog): { key: SortKey; label: string; compare: (a: Opportunity, b: Opportunity) => number }[] => [
+const buildColumns = (catalog: Catalog): Column[] => [
   { key: "code", label: "Código", compare: (a, b) => text(a.code, b.code) },
   { key: "company", label: "Empresa", compare: (a, b) => text(a.company, b.company) },
   { key: "stage", label: "Etapa", compare: (a, b) => catalog.order(a.stage) - catalog.order(b.stage) },
-  { key: "gift", label: "Brinde", compare: (a, b) => text(a.items[0]?.name ?? null, b.items[0]?.name ?? null) },
-  { key: "value", label: "Valor", compare: (a, b) => number(a.estimatedValue, b.estimatedValue) },
+  { key: "gift", label: "Brinde", compare: (a, b) => text(a.items[0]?.name ?? null, b.items[0]?.name ?? null), hasValue: (opp) => opp.items.length > 0 },
+  { key: "value", label: "Valor", compare: (a, b) => number(a.estimatedValue, b.estimatedValue), hasValue: (opp) => opp.estimatedValue != null },
   { key: "seller", label: "Vendedor", compare: (a, b) => text(a.seller.name, b.seller.name) },
-  { key: "lastContact", label: "Último contato", compare: (a, b) => text(a.lastContactAt, b.lastContactAt) },
-  { key: "validity", label: "Validade da proposta", compare: (a, b) => text(a.proposalValidUntil, b.proposalValidUntil) },
-  { key: "event", label: "Evento", compare: (a, b) => text(a.eventDate, b.eventDate) },
+  { key: "lastContact", label: "Último contato", compare: (a, b) => text(a.lastContactAt, b.lastContactAt), hasValue: (opp) => opp.lastContactAt != null },
+  {
+    key: "validity",
+    label: "Validade da proposta",
+    compare: (a, b) => text(a.proposalValidUntil, b.proposalValidUntil),
+    hasValue: (opp) => opp.proposalValidUntil != null,
+  },
+  { key: "event", label: "Evento", compare: (a, b) => text(a.eventDate, b.eventDate), hasValue: (opp) => opp.eventDate != null },
   { key: "attention", label: "Atenção", compare: (a, b) => compareByUrgency(b, a) },
 ];
-
-const hasValue = (opp: Opportunity, key: SortKey) =>
-  key === "value"
-    ? opp.estimatedValue != null
-    : key === "gift"
-      ? opp.items.length > 0
-      : key === "lastContact"
-        ? opp.lastContactAt != null
-        : key === "validity"
-          ? opp.proposalValidUntil != null
-          : key === "event"
-            ? opp.eventDate != null
-            : true;
 
 function Missing() {
   return (
@@ -61,10 +60,11 @@ export function ListView({ opportunities, onOpen }: { opportunities: Opportunity
 
   const rows = useMemo(() => {
     const column = columns.find((item) => item.key === sort.key)!;
+    const hasValue = column.hasValue ?? (() => true);
     const sign = sort.direction === "asc" ? 1 : -1;
     return [...opportunities].sort((a, b) => {
-      const aHas = hasValue(a, sort.key);
-      const bHas = hasValue(b, sort.key);
+      const aHas = hasValue(a);
+      const bHas = hasValue(b);
       if (aHas !== bHas) return aHas ? -1 : 1;
       return sign * column.compare(a, b);
     });

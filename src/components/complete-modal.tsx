@@ -2,6 +2,7 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { validityError } from "@/lib/catalog";
 import { dateBR, parseMoney } from "@/lib/format";
 import { Stage, type GiftItemInput, type Opportunity } from "@/lib/types";
 import { useCatalog } from "./app-data";
@@ -55,11 +56,7 @@ export function CompleteModal({
         ? "Cada item precisa de nome e quantidade."
         : undefined;
 
-  const validityError = !validUntil
-    ? "Informe a validade da proposta."
-    : validUntil < today
-      ? `A validade não pode ser anterior a hoje (${dateBR(today)}).`
-      : undefined;
+  const validUntilError = validityError(validUntil, today);
   const validityHint =
     opp.eventDate && validUntil > opp.eventDate
       ? `Atenção: a validade passa da data do evento (${dateBR(opp.eventDate)}).`
@@ -67,13 +64,13 @@ export function CompleteModal({
 
   const shownValueError = (touched ? valueError : undefined) ?? serverErrors.estimatedValue;
   const shownItemsError = (touched ? itemsError : undefined) ?? serverErrors.items;
-  const shownValidityError = (touched ? validityError : undefined) ?? serverErrors.proposalValidUntil;
+  const shownValidityError = (touched ? validUntilError : undefined) ?? serverErrors.proposalValidUntil;
 
   const update = (index: number, patch: Partial<Row>) => setRows((current) => current.map((row, i) => (i === index ? { ...row, ...patch } : row)));
 
   const submit = () => {
     setTouched(true);
-    if (valueError || itemsError || validityError || pending) return;
+    if (valueError || itemsError || validUntilError || pending) return;
     onConfirm({
       proposalValidUntil: validUntil,
       estimatedValue: Math.round(parsedValue * 100) / 100,
