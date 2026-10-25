@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { Check, CircleCheck, LoaderCircle, RotateCw } from "lucide-react";
 import { Fragment } from "react";
-import { brl } from "@/lib/format";
+import { brlCompact } from "@/lib/format";
 import { countByLevel, type TaskGroup } from "@/lib/tasks";
 import type { Opportunity } from "@/lib/types";
 import { useCatalog } from "./app-data";
@@ -150,7 +150,7 @@ export function Summary({
 
       <dl className="grid grid-cols-2 content-center gap-x-6 gap-y-2 p-3 max-xl:border-t max-xl:border-rule sm:grid-cols-4 xl:border-l xl:border-rule">
         <Stat label="Em aberto" value={String(open.length)} fetching={fetching} />
-        <Stat label="Valor no funil" value={brl(pipeline)} />
+        <Stat label="Valor no funil" value={brlCompact(pipeline)} />
         <Stat label="Agir hoje" value={ready ? String(high) : "—"} tone={ready && high > 0 ? "negative" : undefined} />
         <Stat label="Acompanhar" value={ready ? String(medium) : "—"} tone={ready && medium > 0 ? "warning" : undefined} />
       </dl>

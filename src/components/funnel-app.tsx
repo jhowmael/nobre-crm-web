@@ -296,9 +296,9 @@ function Funnel() {
         setCreating(false);
         toast(`Oportunidade ${created.code} criada em ${catalog.label(created.stage)}.`);
       },
-      onError: (error) =>
+      (error) =>
         report(error, { fallback: "Não foi possível criar a oportunidade.", fields: NEW_FIELDS, onFields: setFormErrors, retry: () => handleCreate(input) }),
-    });
+    );
   };
 
   const completeGroup = (group: TaskGroup) =>
@@ -380,6 +380,7 @@ function Funnel() {
             onOpen={openDetails}
             onMove={requestMove}
             notice={refetchNotice}
+            scope={scopeName}
           />
         )}
         {ready && visible.length > 0 && view === "list" && (

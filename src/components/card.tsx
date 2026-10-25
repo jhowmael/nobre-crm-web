@@ -4,12 +4,12 @@ import { useDraggable } from "@dnd-kit/core";
 import clsx from "clsx";
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { CalendarDays, Lock, Package } from "lucide-react";
-import { brl, dateBR, firstName } from "@/lib/format";
+import { brlCompact, dateBR, firstName } from "@/lib/format";
 import { lockedBadge } from "@/lib/stages";
 import type { Opportunity } from "@/lib/types";
 import { useCatalog } from "./app-data";
 import { ATTENTION_LABEL, AttentionBadge, alertLevel } from "./attention-badge";
-import { Avatar } from "./ui";
+import { Avatar, LossPendingBadge } from "./ui";
 
 export function CardView({ opp, dragging = false, locked = false }: { opp: Opportunity; dragging?: boolean; locked?: boolean }) {
   const first = opp.items[0];
@@ -25,7 +25,7 @@ export function CardView({ opp, dragging = false, locked = false }: { opp: Oppor
       )}
     >
       <div className="flex items-center justify-between gap-2 text-caption text-ink-2">
-        <span className="flex min-w-0 items-center gap-1.5">
+        <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
           <span className="whitespace-nowrap font-mono">{opp.code}</span>
           {locked && (
             <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-[4px] bg-raised px-1.5 text-ink-2" title="Etapa final: não pode ser movido">
@@ -33,6 +33,7 @@ export function CardView({ opp, dragging = false, locked = false }: { opp: Oppor
               {lockedBadge(opp.stage)}
             </span>
           )}
+          {opp.lossReasonPending && <LossPendingBadge />}
         </span>
         <span className="flex min-w-0 items-center gap-1.5">
           <span className="hidden truncate @[14rem]:inline">{firstName(opp.seller.name)}</span>
@@ -52,7 +53,7 @@ export function CardView({ opp, dragging = false, locked = false }: { opp: Oppor
       </div>
       <div className="flex items-center justify-between gap-2">
         <span className={clsx("tabular", opp.estimatedValue == null ? "text-body text-ink-2" : "text-body font-semibold text-ink")}>
-          {brl(opp.estimatedValue)}
+          {brlCompact(opp.estimatedValue)}
         </span>
         <span className="flex items-center gap-1 text-caption text-ink-2" title="Data do evento">
           <CalendarDays size={14} aria-hidden="true" />
@@ -100,8 +101,9 @@ export function DraggableCard({
   const label = [
     `${opp.company}, ${opp.code}`,
     `Etapa ${catalog.label(opp.stage)}`,
+    ...(opp.lossReasonPending ? ["Motivo da perda pendente"] : []),
     opp.attention.level === "none" || !signal ? "Sem alertas" : `${ATTENTION_LABEL[alertLevel(opp.attention.level)]}: ${signal.message}`,
-    `Valor ${brl(opp.estimatedValue)}`,
+    `Valor ${brlCompact(opp.estimatedValue)}`,
     `Evento ${dateBR(opp.eventDate)}`,
     `Vendedor ${opp.seller.name}`,
   ].join(". ");

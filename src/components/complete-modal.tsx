@@ -3,7 +3,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { dateBR, parseMoney } from "@/lib/format";
-import type { GiftItemInput, Opportunity } from "@/lib/types";
+import { Stage, type GiftItemInput, type Opportunity } from "@/lib/types";
 import { useCatalog } from "./app-data";
 import { Button, Field, Input, Modal } from "./ui";
 
@@ -33,7 +33,8 @@ export function CompleteModal({
   onClose: () => void;
   serverErrors?: Record<string, string>;
 }) {
-  const { today, inDays } = useCatalog();
+  const { today, inDays, order } = useCatalog();
+  const verb = order(opp.stage) > order(Stage.APRESENTACAO_ORCAMENTO) ? "voltar" : "avançar";
   const [value, setValue] = useState(opp.estimatedValue ? String(opp.estimatedValue).replace(".", ",") : "");
   const [rows, setRows] = useState<Row[]>(
     opp.items.length > 0 ? opp.items.map((item) => ({ name: item.name, quantity: String(item.quantity) })) : [{ name: "", quantity: "" }],
@@ -83,7 +84,7 @@ export function CompleteModal({
   return (
     <Modal
       title="Completar dados do orçamento"
-      description={`Para avançar ${opp.company} para Apresentação de Orçamento, informe o valor estimado, ao menos um brinde e a validade da proposta.`}
+      description={`Para ${verb} ${opp.company} para Apresentação de Orçamento, informe o valor estimado, ao menos um brinde e a validade da proposta.`}
       alert={serverErrors.to}
       onClose={onClose}
       onSubmit={submit}
@@ -93,7 +94,7 @@ export function CompleteModal({
             Cancelar
           </Button>
           <Button type="submit" variant="primary" disabled={pending}>
-            {pending ? "Salvando…" : "Salvar e avançar"}
+            {pending ? "Salvando…" : `Salvar e ${verb}`}
           </Button>
         </>
       }

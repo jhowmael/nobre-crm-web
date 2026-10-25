@@ -3,13 +3,13 @@
 import clsx from "clsx";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useMemo, useState } from "react";
-import { compareByUrgency } from "@/lib/attention";
+import { compareByUrgency, needsAttention } from "@/lib/attention";
 import type { Catalog } from "@/lib/catalog";
 import { brl, dateBR } from "@/lib/format";
 import type { Opportunity } from "@/lib/types";
 import { useCatalog } from "./app-data";
 import { AttentionBadge } from "./attention-badge";
-import { Avatar } from "./ui";
+import { Avatar, LossPendingBadge } from "./ui";
 
 type SortKey = "code" | "company" | "stage" | "gift" | "value" | "seller" | "lastContact" | "validity" | "event" | "attention";
 type Direction = "asc" | "desc";
@@ -167,7 +167,7 @@ export function ListView({ opportunities, onOpen }: { opportunities: Opportunity
                 <td className="px-3 py-2.5 tabular text-ink-2 group-hover:bg-raised">{date(opp.proposalValidUntil)}</td>
                 <td className="px-3 py-2.5 tabular text-ink-2 group-hover:bg-raised">{date(opp.eventDate)}</td>
                 <td className="min-w-60 whitespace-normal px-3 py-2.5 group-hover:bg-raised">
-                  <AttentionBadge attention={opp.attention} compact />
+                  {opp.lossReasonPending && !needsAttention(opp.attention) ? <LossPendingBadge /> : <AttentionBadge attention={opp.attention} compact />}
                 </td>
               </tr>
             );

@@ -144,6 +144,17 @@ export function SectionTitle({ children, id }: { children: ReactNode; id?: strin
   );
 }
 
+export function LossPendingBadge() {
+  return (
+    <span
+      title="Motivo da perda pendente"
+      className="inline-flex items-center whitespace-nowrap rounded-[4px] bg-warning-tint px-1.5 text-caption font-medium text-warning-ink"
+    >
+      Motivo <span className="sr-only">da perda </span>pendente
+    </span>
+  );
+}
+
 interface Layer {
   id: number;
 }
