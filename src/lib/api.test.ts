@@ -23,7 +23,6 @@ describe("toApiError", () => {
     expect(error.status).toBe(409);
     expect(error.isConflict).toBe(true);
     expect(error.message).toBe(MESSAGES.conflict);
-    expect(error.serverMessage).toBe("A oportunidade foi alterada por outra pessoa.");
   });
 
   it("mantém a mensagem e as violações de um 422", () => {

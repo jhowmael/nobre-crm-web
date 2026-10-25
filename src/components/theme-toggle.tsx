@@ -21,11 +21,8 @@ function apply(theme: Theme) {
   document.documentElement.dataset.theme = theme;
   try {
     localStorage.setItem(STORAGE_KEY, theme);
-  } catch {
-    return;
-  } finally {
-    listeners.forEach((listener) => listener());
-  }
+  } catch {}
+  listeners.forEach((listener) => listener());
 }
 
 export function ThemeToggle() {

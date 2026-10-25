@@ -1,7 +1,11 @@
-export const brl = (value: number | null) =>
+const money = (value: number | null, digits: number) =>
   value == null
     ? "Valor não informado"
-    : value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+    : value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: digits, maximumFractionDigits: digits });
+
+export const brl = (value: number | null) => money(value, 2);
+
+export const brlCompact = (value: number | null) => money(value, 0);
 
 export const dateBR = (iso: string | null) => (iso ? iso.slice(0, 10).split("-").reverse().join("/") : "Não informado");
 
@@ -30,7 +34,7 @@ export const daysBetween = (from: string, to: string) => Math.round((utc(to) - u
 
 export const addDays = (iso: string, days: number) => new Date(utc(iso) + days * 86_400_000).toISOString().slice(0, 10);
 
-export const initials = (name: string) => name.slice(0, 1).toUpperCase();
+export const initial = (name: string) => name.slice(0, 1).toUpperCase();
 
 export const firstName = (name: string) => name.split(" ")[0];
 

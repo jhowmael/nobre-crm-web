@@ -17,12 +17,12 @@ import type {
   UpdateOpportunityInput,
 } from "./types";
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333").replace(/\/+$/, "");
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333").replace(/\/+$/, "");
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
 
-export const READ_TIMEOUT_MS = 10_000;
-export const WRITE_TIMEOUT_MS = 15_000;
-export const TOTAL_COUNT_HEADER = "X-Total-Count";
+const READ_TIMEOUT_MS = 10_000;
+const WRITE_TIMEOUT_MS = 15_000;
+const TOTAL_COUNT_HEADER = "X-Total-Count";
 
 export const MESSAGES = {
   network: "Não foi possível conectar à API. Verifique se ela está no ar e tente novamente.",
@@ -37,7 +37,14 @@ export const MESSAGES = {
   generic: "Não foi possível concluir a operação.",
 } as const;
 
-export type ApiErrorKind = "network" | "timeout" | "http";
+const STATUS_MESSAGES: Partial<Record<number, string>> = {
+  401: MESSAGES.unauthorized,
+  409: MESSAGES.conflict,
+  429: MESSAGES.rateLimit,
+  503: MESSAGES.unavailable,
+};
+
+type ApiErrorKind = "network" | "timeout" | "http";
 
 export class ApiError extends Error {
   constructor(
@@ -45,7 +52,6 @@ export class ApiError extends Error {
     public status: number,
     public errors: FieldViolation[] = [],
     public kind: ApiErrorKind = "http",
-    public serverMessage: string | null = null,
   ) {
     super(message);
     this.name = "ApiError";
@@ -73,28 +79,23 @@ function parseBody(body: unknown): Partial<ApiErrorBody> {
   };
 }
 
+function httpMessage(status: number, server: string | null): string {
+  const fixed = STATUS_MESSAGES[status];
+  if (fixed) return fixed;
+  if (status >= 500) return MESSAGES.server;
+  return server ?? (status === 404 ? MESSAGES.notFound : MESSAGES.generic);
+}
+
 export function toApiError(status: number, body: unknown): ApiError {
   const parsed = parseBody(body);
   const errors = parsed.errors ?? [];
   const server = parsed.message ?? errors[0]?.message ?? null;
-  const message =
-    status === 409
-      ? MESSAGES.conflict
-      : status === 429
-        ? MESSAGES.rateLimit
-        : status === 401
-          ? MESSAGES.unauthorized
-          : status === 503
-            ? MESSAGES.unavailable
-            : status >= 500
-              ? MESSAGES.server
-              : (server ?? (status === 404 ? MESSAGES.notFound : MESSAGES.generic));
-  return new ApiError(message, status, errors, "http", server);
+  return new ApiError(httpMessage(status, server), status, errors);
 }
 
-export const networkError = () => new ApiError(MESSAGES.network, 0, [], "network");
+const networkError = () => new ApiError(MESSAGES.network, 0, [], "network");
 
-export const timeoutError = () => new ApiError(MESSAGES.timeout, 0, [], "timeout");
+const timeoutError = () => new ApiError(MESSAGES.timeout, 0, [], "timeout");
 
 export const errorMessage = (error: unknown, fallback: string = MESSAGES.generic) =>
   error instanceof ApiError ? error.message : fallback;
@@ -114,7 +115,7 @@ export function fieldErrors(error: unknown, fields: readonly string[]) {
   return { matched, rest };
 }
 
-export const failureForced = () =>
+const failureForced = () =>
   typeof window !== "undefined" && new URLSearchParams(window.location.search).has("falha");
 
 type Query = Record<string, string | number | boolean | undefined | null>;
@@ -196,7 +197,7 @@ async function request<T>(path: string, options?: RequestOptions): Promise<T> {
   return data as T;
 }
 
-export function readTotal(headers: Headers, fallback: number) {
+function readTotal(headers: Headers, fallback: number) {
   const raw = headers.get(TOTAL_COUNT_HEADER);
   const total = raw == null ? NaN : Number(raw);
   return Number.isFinite(total) ? total : fallback;
@@ -227,8 +228,6 @@ export const moveStage = (id: string, input: MoveStageInput) =>
   request<Opportunity>(`${opportunityPath(id)}/stage`, { method: "PATCH", body: input });
 
 export const listHistory = (id: string, signal?: AbortSignal) => request<StageChange[]>(`${opportunityPath(id)}/history`, { signal });
-
-export const listContacts = (id: string, signal?: AbortSignal) => request<ContactLog[]>(`${opportunityPath(id)}/contacts`, { signal });
 
 export const registerContact = (id: string, input: ContactInput = {}) =>
   request<ContactLog>(`${opportunityPath(id)}/contacts`, { method: "POST", body: input });

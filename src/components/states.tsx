@@ -1,8 +1,8 @@
-import { CloudOff, Inbox, Plus, RotateCw, SearchX, TriangleAlert } from "lucide-react";
+import { CloudOff, Inbox, Plus, SearchX, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "./theme-toggle";
 import { Mark } from "./topbar";
-import { Button } from "./ui";
+import { Button, RetryButton } from "./ui";
 
 function Bar({ className }: { className: string }) {
   return <div className={`rounded-[4px] bg-active ${className}`} />;
@@ -71,10 +71,7 @@ export function RefetchNotice({ retrying, onRetry }: { retrying: boolean; onRetr
           <span className="font-semibold text-ink">Não foi possível atualizar.</span>{" "}
           <span className="text-ink-2">Exibindo os últimos dados carregados.</span>
         </span>
-        <Button onClick={onRetry} disabled={retrying}>
-          <RotateCw size={16} aria-hidden="true" className={retrying ? "animate-spin" : undefined} />
-          {retrying ? "Tentando…" : "Tentar novamente"}
-        </Button>
+        <RetryButton retrying={retrying} onRetry={onRetry} />
       </div>
     </div>
   );
@@ -96,9 +93,7 @@ function Message({ icon, title, text, children, alert = false }: { icon: ReactNo
 export function ErrorState({ message, onRetry, retrying = false }: { message: string; onRetry: () => void; retrying?: boolean }) {
   return (
     <Message alert icon={<CloudOff size={24} className="text-negative" aria-hidden="true" />} title="Não foi possível carregar o funil" text={message}>
-      <Button variant="primary" onClick={onRetry} disabled={retrying}>
-        <RotateCw size={16} aria-hidden="true" className={retrying ? "animate-spin" : undefined} /> {retrying ? "Tentando…" : "Tentar novamente"}
-      </Button>
+      <RetryButton variant="primary" retrying={retrying} onRetry={onRetry} />
     </Message>
   );
 }

@@ -66,6 +66,7 @@ export function Board({
   onOpen,
   onMove,
   notice,
+  scope,
 }: {
   opportunities: Opportunity[];
   all: Opportunity[];
@@ -74,6 +75,7 @@ export function Board({
   onOpen: (opp: Opportunity) => void;
   onMove: (opp: Opportunity, to: Stage) => void;
   notice?: ReactNode;
+  scope: string | null;
 }) {
   const catalog = useCatalog();
   const { blockedReason, label: stageLabel } = catalog;
@@ -158,6 +160,7 @@ export function Board({
                 filtering={filtering}
                 filteredOut={Boolean(stageFilter) && stage.id !== stageFilter}
                 landedId={landedId}
+                scope={scope}
                 onOpen={onOpen}
               />
             ))}

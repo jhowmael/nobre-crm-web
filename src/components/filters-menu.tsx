@@ -24,7 +24,7 @@ export const countActiveFilters = (filters: Filters, user: Seller | null) => {
   return [mine ? false : filters.seller, filters.stage, filters.onlyAttention, mine].filter(Boolean).length;
 };
 
-function Check({
+function CheckOption({
   checked,
   onChange,
   title,
@@ -95,14 +95,14 @@ export function FiltersMenu({ filters, onChange, user }: { filters: Filters; onC
             <h3 className="text-headline font-semibold">Filtrar o funil</h3>
             <p className="text-caption text-ink-2">Combine os filtros para achar o que importa agora.</p>
           </div>
-          <Check
+          <CheckOption
             checked={mine}
             disabled={user == null}
             onChange={(value) => onChange({ ...filters, onlyMine: value })}
             title={user ? `Só as minhas (${user.name})` : "Só as minhas"}
             hint={user ? "Mostra apenas as oportunidades do usuário logado." : "Entre para usar este filtro."}
           />
-          <Check
+          <CheckOption
             checked={filters.onlyAttention}
             onChange={(value) => onChange({ ...filters, onlyAttention: value })}
             title="Só o que precisa de atenção"

@@ -5,7 +5,7 @@ import { useState, type ReactNode } from "react";
 import { ToastProvider } from "./toast";
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [client] = useState(() => new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false } } }));
+  const [client] = useState(() => new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false, retry: false } } }));
   return (
     <QueryClientProvider client={client}>
       <ToastProvider>{children}</ToastProvider>

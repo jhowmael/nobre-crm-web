@@ -1,14 +1,14 @@
 "use client";
 
 import clsx from "clsx";
-import { Check, CircleCheck, LoaderCircle, RotateCw } from "lucide-react";
+import { Check, CircleCheck, LoaderCircle } from "lucide-react";
 import { Fragment } from "react";
-import { brl } from "@/lib/format";
+import { brlCompact } from "@/lib/format";
 import { countByLevel, type TaskGroup } from "@/lib/tasks";
 import type { Opportunity } from "@/lib/types";
 import { useCatalog } from "./app-data";
 import { ATTENTION_LABEL, AttentionIcon, alertLevel } from "./attention-badge";
-import { Button } from "./ui";
+import { RetryButton } from "./ui";
 
 function Stat({ label, value, tone, fetching = false }: { label: string; value: string; tone?: "negative" | "warning"; fetching?: boolean }) {
   return (
@@ -84,10 +84,7 @@ export function Summary({
         {tasksState === "error" && (
           <div role="alert" className="flex flex-wrap items-center gap-x-3 gap-y-2 text-body">
             <span className="text-ink-2">Não foi possível carregar as tarefas de retorno.</span>
-            <Button onClick={onRetryTasks} disabled={tasksFetching}>
-              <RotateCw size={16} aria-hidden="true" className={tasksFetching ? "animate-spin" : undefined} />
-              {tasksFetching ? "Tentando…" : "Tentar novamente"}
-            </Button>
+            <RetryButton retrying={tasksFetching} onRetry={onRetryTasks} />
           </div>
         )}
         {ready && groups.length === 0 && (
@@ -150,7 +147,7 @@ export function Summary({
 
       <dl className="grid grid-cols-2 content-center gap-x-6 gap-y-2 p-3 max-xl:border-t max-xl:border-rule sm:grid-cols-4 xl:border-l xl:border-rule">
         <Stat label="Em aberto" value={String(open.length)} fetching={fetching} />
-        <Stat label="Valor no funil" value={brl(pipeline)} />
+        <Stat label="Valor no funil" value={brlCompact(pipeline)} />
         <Stat label="Agir hoje" value={ready ? String(high) : "—"} tone={ready && high > 0 ? "negative" : undefined} />
         <Stat label="Acompanhar" value={ready ? String(medium) : "—"} tone={ready && medium > 0 ? "warning" : undefined} />
       </dl>

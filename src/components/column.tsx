@@ -4,13 +4,20 @@ import { useDroppable } from "@dnd-kit/core";
 import clsx from "clsx";
 import { Ban, Funnel, Info, Lock, SearchX } from "lucide-react";
 import { useCallback, useId, useRef, useState } from "react";
-import { brl } from "@/lib/format";
+import { brlCompact } from "@/lib/format";
 import type { StageView } from "@/lib/catalog";
 import type { Opportunity } from "@/lib/types";
 import { DraggableCard } from "./card";
 import { useDismiss } from "./ui";
 
 export type DropState = "idle" | "allowed" | "blocked";
+
+const emptyMessage = ({ filteredOut, filtering, total, scope }: { filteredOut: boolean; filtering: boolean; total: number; scope: string | null }) => {
+  if (filteredOut) return "Filtro por etapa ativo";
+  if (filtering && total > 0) return "Nenhuma oportunidade com esses filtros";
+  if (scope) return `Nenhuma oportunidade de ${scope} nesta etapa`;
+  return "Nenhuma oportunidade nesta etapa";
+};
 
 function StageHint({ stage }: { stage: StageView }) {
   const [open, setOpen] = useState(false);
@@ -53,6 +60,7 @@ export function Column({
   filtering,
   filteredOut = false,
   landedId = null,
+  scope,
   onOpen,
 }: {
   stage: StageView;
@@ -63,6 +71,7 @@ export function Column({
   filtering: boolean;
   filteredOut?: boolean;
   landedId?: string | null;
+  scope: string | null;
   onOpen: (opp: Opportunity) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
@@ -108,7 +117,7 @@ export function Column({
                 <span className="sr-only">Valor não informado</span>
               </>
             ) : (
-              <span className="tabular">{brl(sum)}</span>
+              <span className="tabular">{brlCompact(sum)}</span>
             )}
           </span>
         </p>
@@ -131,11 +140,7 @@ export function Column({
         {items.length === 0 && (
           <div className="flex min-h-28 flex-col items-center justify-center gap-1.5 rounded-card border border-dashed border-border px-4 py-6 text-center text-caption text-ink-2">
             {filteredOut ? <Funnel size={16} aria-hidden="true" /> : <SearchX size={16} aria-hidden="true" />}
-            {filteredOut
-              ? "Filtro por etapa ativo"
-              : filtering && total > 0
-                ? "Nenhuma oportunidade com esses filtros"
-                : "Nenhuma oportunidade nesta etapa"}
+            {emptyMessage({ filteredOut, filtering, total, scope })}
           </div>
         )}
       </div>

@@ -12,8 +12,8 @@ import {
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
-import { TriangleAlert } from "lucide-react";
-import { initials } from "@/lib/format";
+import { RotateCw, TriangleAlert } from "lucide-react";
+import { initial } from "@/lib/format";
 import { useOptionalSellers } from "./app-data";
 
 type Variant = "primary" | "secondary" | "plain" | "danger-quiet";
@@ -51,6 +51,15 @@ export function Button({
         className,
       )}
     />
+  );
+}
+
+export function RetryButton({ retrying, onRetry, variant }: { retrying: boolean; onRetry: () => void; variant?: Variant }) {
+  return (
+    <Button variant={variant} onClick={onRetry} disabled={retrying}>
+      <RotateCw size={16} aria-hidden="true" className={retrying ? "animate-spin" : undefined} />
+      {retrying ? "Tentando…" : "Tentar novamente"}
+    </Button>
   );
 }
 
@@ -144,6 +153,17 @@ export function SectionTitle({ children, id }: { children: ReactNode; id?: strin
   );
 }
 
+export function LossPendingBadge() {
+  return (
+    <span
+      title="Motivo da perda pendente"
+      className="inline-flex items-center whitespace-nowrap rounded-[4px] bg-warning-tint px-1.5 text-caption font-medium text-warning-ink"
+    >
+      Motivo <span className="sr-only">da perda </span>pendente
+    </span>
+  );
+}
+
 interface Layer {
   id: number;
 }
@@ -176,8 +196,8 @@ function useLayer(onEscape: () => void, active: boolean, ref?: RefObject<HTMLEle
 
     if (node) {
       layerNodes.set(layer.id, node);
-      const initial = node.querySelector<HTMLElement>("[data-autofocus]") ?? focusables(node)[0] ?? node;
-      initial.focus();
+      const target = node.querySelector<HTMLElement>("[data-autofocus]") ?? focusables(node)[0] ?? node;
+      target.focus();
     }
 
     const onKey = (event: KeyboardEvent) => {
@@ -233,7 +253,7 @@ function useLayer(onEscape: () => void, active: boolean, ref?: RefObject<HTMLEle
   }, [active, ref]);
 }
 
-export function useEscape(handler: () => void, active = true) {
+function useEscape(handler: () => void, active = true) {
   useLayer(handler, active);
 }
 
@@ -338,7 +358,7 @@ export function Avatar({ name, size = "sm" }: { name: string; size?: "sm" | "md"
         TONE_CLASS[tone],
       )}
     >
-      {initials(name)}
+      {initial(name)}
     </span>
   );
 }

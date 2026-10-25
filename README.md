@@ -36,6 +36,8 @@ O primeiro comando baixa as dependências; o segundo inicia a interface. Abra ht
 
 **O que você deve ver:** o funil em colunas, com os cards da vendedora Ana e, no topo, o painel "Para trabalhar hoje" com a Clínica Vida. Em "Filtros", desligue "Só as minhas" para ver as 7 oportunidades. Tente arrastar a Clínica Vida de Follow-up para Forecast: a mudança é gravada no banco.
 
+Os cards também se movem pelo teclado: Tab até o card, Espaço para pegar, setas para trocar de coluna e Espaço para soltar. Para ver a tela de erro, abra http://localhost:3000/?falha=1.
+
 **Se algo der errado**
 
 | Sintoma | O que fazer |
@@ -56,18 +58,32 @@ src/
   test/         dados de apoio dos testes
 ```
 
+Quando a API mudar o contrato, rode `npm run openapi:export` lá e `npm run api:types` aqui; o `tsc` aponta o que precisa mudar.
+
 ## Testes
 
 ```
 npm test
 ```
 
-## Mais detalhes
+`npm test` (Vitest) cobre as funções de `src/lib`: o mapeamento de erros do cliente HTTP (409, 422 com campos, 429, 401, 503, falha de rede, tempo limite e `X-Total-Count`), o comparador de urgência, o agrupamento de tarefas por oportunidade, a leitura do catálogo (`blockedReason`, etapas e o que falta para o orçamento) e a formatação de valores. Não há testes de componente nem de navegador. O catálogo usado nos testes fica em `src/test/fixtures.ts`.
 
-- [docs/guia.md](docs/guia.md): roteiro do que experimentar na tela, problemas comuns e variáveis de ambiente.
-- [docs/decisoes.md](docs/decisoes.md): de onde vem cada dado, decisões de produto, acessibilidade e limitações.
-- [DESIGN.md](DESIGN.md) e [PRODUCT.md](PRODUCT.md): decisões de design e contexto do produto.
-- Como eu resolveria os outros 3 problemas do case: [no repositório da API](https://github.com/jhowmael/nobre-crm-api/blob/main/docs/outros-problemas.md).
+## Configuração
+
+| Variável | Padrão | Uso |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3333` | endereço da API |
+| `NEXT_PUBLIC_API_KEY` | vazia | enviada no cabeçalho `x-api-key` quando a API tem `API_KEY` definida |
+
+Variáveis `NEXT_PUBLIC_*` vão para o JavaScript do navegador, então a chave ali só serve para demonstração.
+
+## Limitações
+
+- Não há login: o usuário é escolhido no menu e o `sellerId` sai do navegador.
+- A tela não pagina; a API devolve a lista inteira do escopo.
+- A busca não ignora acentos: "clinica" não acha "Clínica".
+
+As regras do funil, a automação e os outros 3 problemas do case estão no [README da API](https://github.com/jhowmael/nobre-crm-api#regras-do-funil).
 
 ## Uso de IA
 

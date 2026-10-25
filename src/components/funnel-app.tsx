@@ -52,9 +52,7 @@ function storeUser(id: string | null) {
   try {
     if (id) localStorage.setItem(USER_KEY, id);
     else localStorage.removeItem(USER_KEY);
-  } catch {
-    return;
-  }
+  } catch {}
 }
 
 const defaultUser = (sellers: Seller[]) =>
@@ -203,21 +201,18 @@ function Funnel() {
 
   const runMove = (opp: Opportunity, to: Stage, payload?: MovePayload, onDone?: () => void, fields?: readonly string[]) => {
     setFormErrors({});
-    move.mutate(
-      { opp, to, payload },
-      {
-        onSuccess: () => {
-          onDone?.();
-          toast(`${opp.company} movida para ${catalog.label(to)}.`);
-        },
-        onError: (error) =>
-          report(error, {
-            fallback: "Não foi possível mover a oportunidade.",
-            fields,
-            onFields: setFormErrors,
-            retry: () => runMove(opp, to, payload, onDone, fields),
-          }),
+    move.mutateAsync({ opp, to, payload }).then(
+      () => {
+        onDone?.();
+        toast(`${opp.company} movida para ${catalog.label(to)}.`);
       },
+      (error) =>
+        report(error, {
+          fallback: "Não foi possível mover a oportunidade.",
+          fields,
+          onFields: setFormErrors,
+          retry: () => runMove(opp, to, payload, onDone, fields),
+        }),
     );
   };
 
@@ -252,21 +247,18 @@ function Funnel() {
 
   const saveValidity = (opp: Opportunity, date: string, onDone: () => void) => {
     setValidityError(undefined);
-    update.mutate(
-      { opp, patch: { proposalValidUntil: date } },
-      {
-        onSuccess: () => {
-          onDone();
-          toast(`Validade da proposta de ${opp.company} atualizada para ${dateBR(date)}.`);
-        },
-        onError: (error) =>
-          report(error, {
-            fallback: "Não foi possível atualizar a validade.",
-            fields: ["proposalValidUntil"],
-            onFields: (errors) => setValidityError(errors.proposalValidUntil),
-            retry: () => saveValidity(opp, date, onDone),
-          }),
+    update.mutateAsync({ opp, patch: { proposalValidUntil: date } }).then(
+      () => {
+        onDone();
+        toast(`Validade da proposta de ${opp.company} atualizada para ${dateBR(date)}.`);
       },
+      (error) =>
+        report(error, {
+          fallback: "Não foi possível atualizar a validade.",
+          fields: ["proposalValidUntil"],
+          onFields: (errors) => setValidityError(errors.proposalValidUntil),
+          retry: () => saveValidity(opp, date, onDone),
+        }),
     );
   };
 
@@ -274,53 +266,43 @@ function Funnel() {
     const opp = lossEditFor;
     if (!opp) return;
     setFormErrors({});
-    update.mutate(
-      { opp, patch: input },
-      {
-        onSuccess: () => {
-          setLossEditFor(null);
-          toast(`Motivo da perda de ${opp.company} registrado.`);
-        },
-        onError: (error) =>
-          report(error, {
-            fallback: "Não foi possível registrar o motivo.",
-            fields: LOSS_FIELDS,
-            onFields: setFormErrors,
-            retry: () => saveLossReason(input),
-          }),
+    update.mutateAsync({ opp, patch: input }).then(
+      () => {
+        setLossEditFor(null);
+        toast(`Motivo da perda de ${opp.company} registrado.`);
       },
+      (error) =>
+        report(error, {
+          fallback: "Não foi possível registrar o motivo.",
+          fields: LOSS_FIELDS,
+          onFields: setFormErrors,
+          retry: () => saveLossReason(input),
+        }),
     );
   };
 
   const registerContact = (opp: Opportunity) =>
-    contact.mutate(
-      { opp, sellerId: user?.id },
-      {
-        onSuccess: () => toast(`Contato com ${opp.company} registrado.`),
-        onError: (error) =>
-          report(error, { fallback: `Não foi possível registrar o contato com ${opp.company}.`, retry: () => registerContact(opp) }),
-      },
+    contact.mutateAsync({ opp, sellerId: user?.id }).then(
+      () => toast(`Contato com ${opp.company} registrado.`),
+      (error) => report(error, { fallback: `Não foi possível registrar o contato com ${opp.company}.`, retry: () => registerContact(opp) }),
     );
 
   const handleCreate = (input: NewOpportunityInput) => {
     setFormErrors({});
-    create.mutate(input, {
-      onSuccess: (created) => {
+    create.mutateAsync(input).then(
+      (created) => {
         setCreating(false);
         toast(`Oportunidade ${created.code} criada em ${catalog.label(created.stage)}.`);
       },
-      onError: (error) =>
+      (error) =>
         report(error, { fallback: "Não foi possível criar a oportunidade.", fields: NEW_FIELDS, onFields: setFormErrors, retry: () => handleCreate(input) }),
-    });
+    );
   };
 
   const completeGroup = (group: TaskGroup) =>
-    completeTasks.mutate(
-      group.tasks.map((task) => task.id),
-      {
-        onSuccess: () => toast(group.tasks.length === 1 ? `Tarefa de ${group.company} concluída.` : `Tarefas de ${group.company} concluídas.`),
-        onError: (error) => report(error, { fallback: "Não foi possível concluir a tarefa.", retry: () => completeGroup(group) }),
-      },
+    completeTasks.mutateAsync(group.tasks.map((task) => task.id)).then(
+      () => toast(group.tasks.length === 1 ? `Tarefa de ${group.company} concluída.` : `Tarefas de ${group.company} concluídas.`),
+      (error) => report(error, { fallback: "Não foi possível concluir a tarefa.", retry: () => completeGroup(group) }),
     );
 
   const openDetails = (opp: Opportunity) => {
@@ -396,6 +378,7 @@ function Funnel() {
             onOpen={openDetails}
             onMove={requestMove}
             notice={refetchNotice}
+            scope={scopeName}
           />
         )}
         {ready && visible.length > 0 && view === "list" && (

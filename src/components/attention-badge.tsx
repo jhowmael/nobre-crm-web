@@ -1,28 +1,31 @@
 import clsx from "clsx";
 import { Clock, TriangleAlert } from "lucide-react";
+import { AttentionLevel, AttentionSignalLevel } from "@/lib/types";
 
-const keepHyphens = (text: string) => text.replace(/-/g, "\u2011");
-
-export type AlertLevel = "high" | "medium";
-
-export const ATTENTION_LABEL: Record<AlertLevel, string> = { high: "Agir hoje", medium: "Acompanhar" };
-
-export const alertLevel = (level: string): AlertLevel => (level === "high" ? "high" : "medium");
-
-export function AttentionIcon({ level, size = 14 }: { level: string; size?: number }) {
-  const Icon = level === "high" ? TriangleAlert : Clock;
-  return <Icon size={size} aria-hidden="true" className="shrink-0" />;
-}
-
-export interface BadgeAttention {
-  level: string;
+interface BadgeAttention {
+  level: AttentionLevel | AttentionSignalLevel;
   signals: { message: string }[];
 }
 
+const keepHyphens = (text: string) => text.replace(/-/g, "\u2011");
+
+export const ATTENTION_LABEL: Record<AttentionSignalLevel, string> = {
+  [AttentionSignalLevel.high]: "Agir hoje",
+  [AttentionSignalLevel.medium]: "Acompanhar",
+};
+
+export const alertLevel = (level: AttentionLevel | AttentionSignalLevel): AttentionSignalLevel =>
+  level === AttentionSignalLevel.high ? AttentionSignalLevel.high : AttentionSignalLevel.medium;
+
+export function AttentionIcon({ level, size = 14 }: { level: AttentionSignalLevel; size?: number }) {
+  const Icon = level === AttentionSignalLevel.high ? TriangleAlert : Clock;
+  return <Icon size={size} aria-hidden="true" className="shrink-0" />;
+}
+
 export function AttentionBadge({ attention, compact = false }: { attention: BadgeAttention; compact?: boolean }) {
-  if (attention.level === "none" || attention.signals.length === 0) return null;
+  if (attention.level === AttentionLevel.none || attention.signals.length === 0) return null;
   const level = alertLevel(attention.level);
-  const high = level === "high";
+  const high = level === AttentionSignalLevel.high;
   const messages = attention.signals.map((signal) => signal.message);
   const extra = messages.length - 1;
   return (
